@@ -423,6 +423,11 @@ function removeLine(key){
   saveCart();
   updateCartUI();
 }
+function clearCart(){
+  cart = [];
+  saveCart();
+  updateCartUI();
+}
 
 /* ---------------- WhatsApp ---------------- */
 function waNumber(){ return digitsOnly(STATE.shop.whatsapp); }
@@ -644,7 +649,7 @@ function renderCartDrawer(){
       '<div class="drawer-foot">' +
         '<div class="total-row"><span>Sous-total</span><span>' + fmtFcfa(cartTotal()) + '</span></div>' +
         '<p class="total-note">Les frais de livraison seront ajoutés une fois la commande envoyée sur WhatsApp.</p>' +
-        '<a class="btn btn-whatsapp btn-block" id="send-order" ' + (cart.length? ('target="_blank" rel="noopener" href="' + waLink(buildCartMessage()) + '"') : 'aria-disabled="true"') + '>' + iconSvg('whatsapp') + ' Envoyer ma commande sur WhatsApp</a>' +
+        '<a class="btn btn-whatsapp btn-block" id="send-order" data-action="send-order" ' + (cart.length? ('target="_blank" rel="noopener" href="' + waLink(buildCartMessage()) + '"') : 'aria-disabled="true"') + '>' + iconSvg('whatsapp') + ' Envoyer ma commande sur WhatsApp</a>' +
       '</div>' +
     '</aside>';
 }
@@ -979,6 +984,17 @@ function handleClick(e){
   else if (action==='save-passcode'){ savePasscode(); }
   else if (action==='remove-logo'){ STATE.shop.logo = ''; renderShell(); ui.adminOpen = true; ui.adminUnlocked = true; ui.adminTab = 'reglages'; renderAdmin(); toast('Logo retiré (pensez à publier)'); }
   else if (action==='publish-site'){ publishSite(); }
+  else if (action==='send-order'){
+    if (!cart.length) return;
+    // Le lien ouvre WhatsApp dans un nouvel onglet (target="_blank") ; on ne
+    // peut pas savoir si le client a vraiment appuyé sur "Envoyer" côté
+    // WhatsApp, donc on vide le panier au moment du clic (comportement
+    // standard pour ce type de commande).
+    clearCart();
+    ui.cartOpen = false;
+    renderCartDrawer();
+    toast('Commande envoyée sur WhatsApp — panier vidé');
+  }
 }
 
 function readVariantFromCard(card){
